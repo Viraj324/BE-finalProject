@@ -89,33 +89,34 @@ project-root/ │ ├── frontend/ # React app │ ├── src/ │ └─�
 
 ---
 
-🔐 Privacy & Security
-Data is anonymized and encrypted.
-Authentication with JWT tokens.
-No persistent facial video data is stored.
-Secure quizzes with anti-cheating mechanisms.
+## 🔐 Privacy & Security
 
----
-👨‍🏫 Team
-Somesh Somani
-Priyanshu Mahukhaye
-Viraj Sonawane
-Shitanshu Bhadwaik
-Guide: Prof. Manish Khodaskar
-
----
-🚀 Future Scope
-Convert into browser extension for plug-and-play support.
-Integrate with LMS (e.g., Moodle, Google Classroom).
-Multilingual and speech-to-text support.
-Use reinforcement learning for adaptive teaching paths.
+- Data is anonymized and encrypted.
+- Authentication with JWT tokens.
+- No persistent facial video data is stored.
+- Secure quizzes with anti-cheating mechanisms.
 
 ---
 
+## 👨‍🏫 Team
+
+- **Somesh Somani**
+- **Priyanshu Mahukhaye**
+- **Viraj Sonawane**
+- **Shitanshu Bhadwaik**
+- **Guide**: Prof. Manish Khodaskar
+
 ---
-📜 License
+
+## 🚀 Future Scope
+
+- Convert into browser extension for plug-and-play support.
+- Integrate with LMS (e.g., Moodle, Google Classroom).
+- Multilingual and speech-to-text support.
+- Use reinforcement learning for adaptive teaching paths.
+
+---
+
+## 📜 License
+
 This project is intended for academic and non-commercial use only.
-
-✅ **Now it will render cleanly on GitHub** with proper icons, indentation, and formatting.
-
-Let me know if you want a downloadable version of this or want to include the actual diagrams from your PDF!
