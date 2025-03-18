@@ -89,20 +89,6 @@ project-root/ │ ├── frontend/ # React app │ ├── src/ │ └─�
 
 ---
 
-## ⚙️ Setup Instructions
-
-### 🔧 Backend Setup
-
-```bash
-cd backend
-npm install
-
----
-### 🌐 Frontend Setup
-cd frontend
-npm install
-
----
 🔐 Privacy & Security
 Data is anonymized and encrypted.
 Authentication with JWT tokens.
