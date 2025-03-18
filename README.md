@@ -84,4 +84,19 @@ This platform addresses the core issues in online education—such as student at
 ---
 
 ## 📁 Folder Structure
+project-root/ │ ├── frontend/ # React app │ ├── src/ │ └── .env │ ├── backend/ # Node.js API │ ├── routes/ │ ├── models/ │ └── .env │ ├── assets/ # Images & architecture diagrams │ └── README.md
 
+
+---
+
+## ⚙️ Setup Instructions
+
+### 🔧 Backend Setup
+
+```bash
+cd backend
+npm install
+
+### 🌐 Frontend Setup
+cd frontend
+npm install
