@@ -1,0 +1,13 @@
+[
+    {
+      "name": "PICT",
+      "classrooms": ["BE11", "BE10", "BE09", "TE11", "TE10", "TE09"],
+      "city": "Pune"
+    },
+    {
+      "name": "COEP",
+      "classrooms": ["COMP", "ELECTRICAL"],
+      "city": "Pune"
+    }
+  ]
+  
