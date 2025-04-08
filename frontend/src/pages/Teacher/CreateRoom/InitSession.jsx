@@ -213,7 +213,7 @@ const InitSession = () => {
   const sendTranscriptionToServer = () => {
     //sending data to server and reseting the transript;
 
-    let data = "DevOps stands for Development and Operations. It is a set of practices that combines software development and IT operations to improve collaboration and efficiency. The primary goal of DevOps is to shorten the development lifecycle and deliver high-quality software through automation, continuous integration, and continuous delivery (CI/CD). It promotes Infrastructure as Code (IaC), allowing teams to automate and manage infrastructure using code for consistent and scalable environments. DevOps also emphasizes monitoring, feedback loops, and continuous improvement to ensure optimal performance and quick issue resolution.";
+    let data = "An Operating System (OS) is system software that manages computer hardware, software resources, and provides essential services for computer programs. It acts as an intermediary between users and the computer hardware, ensuring efficient execution of tasks. Key functions of an OS include process management, memory management, file system handling, device control, and user interface management. It enables multitasking, handles user inputs, and ensures system security and stability. Common examples of operating systems include Windows, macOS, Linux, and Android. By managing hardware and software resources, the OS ensures a smooth and user-friendly computing experience";
 
     // console.log('Data for summary is : ', data);
     console.log("Axios called");
