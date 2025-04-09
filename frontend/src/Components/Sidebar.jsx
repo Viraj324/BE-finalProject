@@ -17,25 +17,24 @@ const Sidebar = () => {
   const [teacher, setTeacher] = useState();
   const [loading, setLoading] = useState(true);
 
-
-  // useEffect(() => {
-  //   // const teacherData = ReactSession.get("teacher");
-  //   var teacherData = sessionStorage.getItem("teacher");
-  //   setTeacher(JSON.parse(teacherData));
-  //   setLoading(false);
-  //   // console.log(JSON.parse(teacherData).teacher.emailID)
-  // }, []);
-
+  useEffect(() => {
+    // const teacherData = ReactSession.get("teacher");
+    var teacherData = sessionStorage.getItem("teacher");
+    setTeacher(JSON.parse(teacherData));
+    console.log(teacherData);
+    setLoading(false);
+    // console.log(JSON.parse(teacherData).teacher.emailID)
+  }, []);
 
   const navigate = useNavigate();
-  // if (loading) {
-  //   return (
-  //     <div>
-  //       <Spinner name="chasing-dots" style={{ width: 100, height: 100 }} />
-  //     </div>
-  //   );
-  // }
-  
+  if (loading) {
+    return (
+      <div>
+        <Spinner name="chasing-dots" style={{ width: 100, height: 100 }} />
+      </div>
+    );
+  }
+
   return (
     <div className="p-0 sm:block z-30  relative border-r-black">
       <div className="px-5 py-3 border-r-black">
@@ -43,11 +42,12 @@ const Sidebar = () => {
           className="flex items-center justify-between text-gray-900  border-b-2"
           to="/teacher/home"
         >
-
           <div className="flex gap-4 justify-center items-center w-full h-[7rem]">
-            <FaUserCircle className="text-gray-400 h-10 w-10"/>
+            <FaUserCircle className="text-gray-400 h-10 w-10" />
             {/** <h1 className="font-serif text-xl font-bold">{ teacher.teacher.emailID.length < 15 ? teacher.teacher.emailID: `${teacher.teacher.emailID.substring(0, 10)}...`}</h1>*/}
-            <h1 className="font-serif text-xl font-bold">{"Priyanshu Mahukhaye"}</h1>
+            <h1 className="font-serif text-xl font-bold">
+              {teacher.teacher.firstName}
+            </h1>
           </div>
         </Link>
       </div>

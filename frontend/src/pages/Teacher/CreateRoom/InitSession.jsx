@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Sidebar from "../../../Components/Sidebar";
 import { FaCopy, FaUserCircle } from "react-icons/fa";
 
@@ -11,157 +11,12 @@ import SpeechRecognition, {
 } from "react-speech-recognition";
 import { useParams } from "react-router-dom";
 
-const students = [
-  {
-    id: 1,
-    name: "Tony Stark",
-    email: "tony@example.com",
-    attentiveness: 75,
-  },
-  {
-    id: 2,
-    name: "Peter",
-    email: "spidy@example.com",
-    attentiveness: 95,
-  },
-  {
-    id: 3,
-    name: "Tony Stark",
-    email: "tony@example.com",
-    attentiveness: 20,
-  },
-  {
-    id: 4,
-    name: "Peter",
-    email: "spidy@example.com",
-    attentiveness: 40,
-  },
-  {
-    id: 5,
-    name: "Tony Stark",
-    email: "tony@example.com",
-    attentiveness: 65,
-  },
-  {
-    id: 6,
-    name: "Peter",
-    email: "spidy@example.com",
-    attentiveness: 70,
-  },
-  {
-    id: 7,
-    name: "Tony Stark",
-    email: "tony@example.com",
-    attentiveness: 71,
-  },
-  {
-    id: 8,
-    name: "Peter",
-    email: "spidy@example.com",
-    attentiveness: 72,
-  },
-  {
-    id: 9,
-    name: "Tony Stark",
-    email: "tony@example.com",
-    attentiveness: 75,
-  },
-  {
-    id: 10,
-    name: "Peter",
-    email: "spidy@example.com",
-    attentiveness: 95,
-  },
-  {
-    id: 11,
-    name: "Tony Stark",
-    email: "tony@example.com",
-    attentiveness: 20,
-  },
-  {
-    id: 12,
-    name: "Peter",
-    email: "spidy@example.com",
-    attentiveness: 40,
-  },
-  {
-    id: 13,
-    name: "Tony Stark",
-    email: "tony@example.com",
-    attentiveness: 65,
-  },
-  {
-    id: 14,
-    name: "Peter",
-    email: "spidy@example.com",
-    attentiveness: 70,
-  },
-  {
-    id: 15,
-    name: "Tony Stark",
-    email: "tony@example.com",
-    attentiveness: 71,
-  },
-  {
-    id: 16,
-    name: "Peter",
-    email: "spidy@example.com",
-    attentiveness: 72,
-  },
-  {
-    id: 17,
-    name: "Tony Stark",
-    email: "tony@example.com",
-    attentiveness: 75,
-  },
-  {
-    id: 18,
-    name: "Peter",
-    email: "spidy@example.com",
-    attentiveness: 95,
-  },
-  {
-    id: 19,
-    name: "Tony Stark",
-    email: "tony@example.com",
-    attentiveness: 20,
-  },
-  {
-    id: 20,
-    name: "Peter",
-    email: "spidy@example.com",
-    attentiveness: 40,
-  },
-  {
-    id: 21,
-    name: "Tony Stark",
-    email: "tony@example.com",
-    attentiveness: 65,
-  },
-  {
-    id: 22,
-    name: "Peter",
-    email: "spidy@example.com",
-    attentiveness: 70,
-  },
-  {
-    id: 23,
-    name: "Tony Stark",
-    email: "tony@example.com",
-    attentiveness: 71,
-  },
-  {
-    id: 24,
-    name: "Peter",
-    email: "spidy@example.com",
-    attentiveness: 72,
-  },
-];
+import { io } from "socket.io-client";
 
 const InitSession = () => {
   const searchParams = new URLSearchParams(window.location.search);
-  const redirect_url = searchParams.get('redirect_url');
-  const quizid = searchParams.get('quizid')
+  const redirect_url = searchParams.get("redirect_url");
+  const quizid = searchParams.get("quizid");
 
   const { transcript, resetTranscript } = useSpeechRecognition();
 
@@ -169,8 +24,12 @@ const InitSession = () => {
   const [tdata, setTdata] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const [students, setStudents] = useState([]);
+
+  const socketRef = useRef();
+
   const navigate = useNavigate();
-  let {id} = useParams();
+  let { id } = useParams();
   // console.log("initsession url", id)
 
   const apiKey = process.env.REACT_APP_STUDYAI_API;
@@ -196,6 +55,44 @@ const InitSession = () => {
   }, []);
 
   useEffect(() => {
+    try {
+      socketRef.current = io(process.env.REACT_APP_STUDYAI_WS); // Change if different port
+      console.log(socketRef.current);
+      // Create room
+      socketRef.current.emit("create_room", id);
+
+      socketRef.current.on("new_joinee", (student) => {
+        setStudents((prev) => {
+          const exists = prev.find((s) => s.email === student.email);
+          if (exists) {
+            // Replace the existing student data
+            return prev.map((s) => (s.email === student.email ? student : s));
+          } else {
+            // Insert new student
+            return [...prev, student];
+          }
+        });
+        console.log("new joinee", student);
+      });
+
+      socketRef.current.on("joinee_attention", ({ student, attention }) => {
+        setStudents((prev) =>
+          prev.map((s) => (s.email === student.email ? { ...s, attention } : s))
+        );
+
+        console.log(`${student.name} -> Attention: ${attention}%`);
+      });
+    } catch (error) {
+      console.log(error);
+    }
+    return () => {
+      // Cleanup
+      socketRef.current.emit("close_room", { _id: id });
+      socketRef.current.disconnect();
+    };
+  }, [id]);
+
+  useEffect(() => {
     let intervalId;
     if (recording) {
       intervalId = setInterval(() => {
@@ -213,7 +110,8 @@ const InitSession = () => {
   const sendTranscriptionToServer = () => {
     //sending data to server and reseting the transript;
 
-    let data = "DevOps stands for Development and Operations. It is a set of practices that combines software development and IT operations to improve collaboration and efficiency. The primary goal of DevOps is to shorten the development lifecycle and deliver high-quality software through automation, continuous integration, and continuous delivery (CI/CD). It promotes Infrastructure as Code (IaC), allowing teams to automate and manage infrastructure using code for consistent and scalable environments. DevOps also emphasizes monitoring, feedback loops, and continuous improvement to ensure optimal performance and quick issue resolution.";
+    let data =
+      "DevOps stands for Development and Operations. It is a set of practices that combines software development and IT operations to improve collaboration and efficiency. The primary goal of DevOps is to shorten the development lifecycle and deliver high-quality software through automation, continuous integration, and continuous delivery (CI/CD). It promotes Infrastructure as Code (IaC), allowing teams to automate and manage infrastructure using code for consistent and scalable environments. DevOps also emphasizes monitoring, feedback loops, and continuous improvement to ensure optimal performance and quick issue resolution.";
 
     // console.log('Data for summary is : ', data);
     console.log("Axios called");
@@ -224,11 +122,15 @@ const InitSession = () => {
       },
     };
 
-    console.log(transcript)
-    // return; 
+    console.log(transcript);
+    // return;
 
     axios
-      .post("http://localhost:5001/api/v1/personalization/summarize", { topic: data }, config)
+      .post(
+        `${process.env.REACT_APP_STUDYAI_API}/personalization/summarize`,
+        { topic: data },
+        config
+      )
       .then((response) => {
         console.log("Data from summary response is : ", response.data);
 
@@ -253,7 +155,7 @@ const InitSession = () => {
       .catch((err) => {
         console.log(err);
       });
-      
+
     resetTranscript();
     stopRecording();
   };
@@ -297,7 +199,7 @@ const InitSession = () => {
 
   const handleGenerateQuiz = () => {
     console.log(`/teacher/quiz/${quizid}?addquestion=true`);
-    
+
     navigate(`/teacher/quiz/${quizid}?addquestion=true`);
   };
 
@@ -355,8 +257,8 @@ const InitSession = () => {
   if (loading) {
     return <h1>loading</h1>;
   }
-  const shareLink =`${apiKey}/room_id=${id}&redirect_url=${redirect_url}`
-  const MAX_LINK_LENGTH = 56
+  const shareLink = `${apiKey}/room_id=${id}&redirect_url=${redirect_url}`;
+  const MAX_LINK_LENGTH = 56;
   return (
     <div className="">
       {showModal ? (
@@ -439,8 +341,10 @@ text-[#9696a6] min-h-screen fixed w-[18%]"
           <section className="  col-start-3 col-end-12 min-h-screen px-8">
             {stopRecord ? (
               <div className="px-10 py-5">
-                <div className="flex flex-col justify-start
-items-start gap-10 ">
+                <div
+                  className="flex flex-col justify-start
+items-start gap-10 "
+                >
                   <div>
                     <form onSubmit={submitTranscript}>
                       <button
@@ -471,8 +375,10 @@ border-blue-500 hover:border-transparent rounded"
                       Quiz responses
                     </button>
 
-                    <div className="flex-1 w-full md:w-1/4 flex
-flex-col flex-grow flex-wrap flex-shrink grid-flow-row gap-5 pt-10">
+                    <div
+                      className="flex-1 w-full md:w-1/4 flex
+flex-col flex-grow flex-wrap flex-shrink grid-flow-row gap-5 pt-10"
+                    >
                       {students.map((student) => (
                         <div
                           className="w-full md:w-1/3 flex flex-row justify-start
@@ -503,17 +409,17 @@ overflow-hidden bg-gray-300"
                               >
                                 <div
                                   className={`h-full rounded-lg ${
-                                    student.attentiveness >= 80
+                                    student.attention >= 80
                                       ? "bg-green-400"
-                                      : student.attentiveness >= 60
+                                      : student.attention >= 60
                                       ? "bg-yellow-400"
                                       : "bg-red-400"
                                   }`}
-                                  style={{ width: `${student.attentiveness}%` }}
+                                  style={{ width: `${student.attention}%` }}
                                 ></div>
                               </div>
                               <div className="text-sm text-gray-500 ml-4">
-                                {student.attentiveness}%
+                                {student.attention}%
                               </div>
                             </div>
                           </div>
@@ -532,13 +438,17 @@ overflow-hidden bg-gray-300"
                 <div className="  px-5">
                   {closebtn === false && (
                     <div className="">
-                      <h1 className="text-xl font-semibold">The session has been created successfully</h1>
+                      <h1 className="text-xl font-semibold">
+                        The session has been created successfully
+                      </h1>
                       <br />
                       <h1>Share this link with the students </h1>
                       <br />
                       <div className=" bg-purplebg  rounded-lg mb-10 overflow-hidden">
                         <h1 className=" bg-slate-100 drop-shadow-md text-black p-2">
-                        {shareLink?.length > MAX_LINK_LENGTH ?`${shareLink.substring(0, MAX_LINK_LENGTH)}...`: shareLink}
+                          {shareLink?.length > MAX_LINK_LENGTH
+                            ? `${shareLink.substring(0, MAX_LINK_LENGTH)}...`
+                            : shareLink}
                           <button
                             onClick={() =>
                               copyToClipboard(
@@ -593,9 +503,11 @@ border-red-500 hover:border-transparent rounded"
         <p>{frameData}</p> */}
                 </div>
 
-                <div className="grid grid-cols-1 msm:grid-cols-2
+                <div
+                  className="grid grid-cols-1 msm:grid-cols-2
 mmd:grid-cols-2 mlg:grid-cols-3 mxl:grid-cols-4 m2xl:grid-cols-5 gap-7
-mt-8">
+mt-8"
+                >
                   {students.map((student) => (
                     <div
                       className="flex flex-row justify-start items-start
@@ -604,9 +516,13 @@ gap-4 bg-white bg-opacity-20 rounded-lg shadow-md p-4"
                     >
                       <FaUserCircle className="text-gray-500 w-12 h-12 mb-4" />
                       <div>
-                        <h2 className="text-lg
-font-medium">{student.name}</h2>+{" "}
-                        <p className="text-gray-500 mb-2">{student.email}</p>
+                        <h2
+                          className="text-lg
+font-medium"
+                        >
+                          {student.name}
+                        </h2>
+                        + <p className="text-gray-500 mb-2">{student.email}</p>
                         <p className="text-sm text-gray-400">
                           Joined at {joinedTime}
                         </p>
@@ -617,17 +533,17 @@ overflow-hidden bg-purplebg"
                           >
                             <div
                               className={`h-full rounded-lg ${
-                                student.attentiveness >= 80
+                                student.attention >= 80
                                   ? "bg-green-400"
-                                  : student.attentiveness >= 60
+                                  : student.attention >= 60
                                   ? "bg-yellow-400"
                                   : "bg-red-400"
                               }`}
-                              style={{ width: `${student.attentiveness}%` }}
+                              style={{ width: `${student.attention}%` }}
                             ></div>
                           </div>
                           <div className="text-sm text-gray-500 ml-4">
-                            {student.attentiveness}%
+                            {student.attention}%
                           </div>
                         </div>
                       </div>

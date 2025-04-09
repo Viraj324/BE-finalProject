@@ -59,7 +59,7 @@ const start = async () => {
     });
 
     const io = require("socket.io")(server, {
-      pingTimeout: 60000,
+      pingTimeout: 5000,
       cors: {
         origin: "*",
       },
@@ -72,18 +72,15 @@ const start = async () => {
       });
 
       socket.on("create_room", (roomID) => {
-        socket.join(roomID);
         console.log("room created " + roomID);
+        socket.join(roomID);
       });
 
       socket.on("join_room", (data) => {
         socket.join(data._id);
 
         console.log(
-          "user joined to chat room " +
-            data._id +
-            " user id " +
-            data.student._id
+          "studnet joined room " + data._id + " user id " + data.student.id
         );
         data.student.joinedTime = new Date().toLocaleTimeString();
         data.student.attention = 100;
