@@ -18,7 +18,7 @@ const InitSession = () => {
   const redirect_url = searchParams.get("redirect_url");
   const quizid = searchParams.get("quizid");
 
-  const { transcript, resetTranscript } = useSpeechRecognition();
+  const { transcript, finalTranscript, interimTranscript,   resetTranscript } = useSpeechRecognition();
 
   const [sessionID, setSessionID] = useState("");
   const [tdata, setTdata] = useState(null);
@@ -98,7 +98,7 @@ const InitSession = () => {
       intervalId = setInterval(() => {
         console.log("Sending data to server");
         sendTranscriptionToServer();
-      }, 1000 * 4); // repeat every 1 minutes
+      }, 1000 * 30); // repeat every 1 minutes
     }
     return () => clearInterval(intervalId);
   }, [recording]);
@@ -113,6 +113,11 @@ const InitSession = () => {
     let data =
       "DevOps stands for Development and Operations. It is a set of practices that combines software development and IT operations to improve collaboration and efficiency. The primary goal of DevOps is to shorten the development lifecycle and deliver high-quality software through automation, continuous integration, and continuous delivery (CI/CD). It promotes Infrastructure as Code (IaC), allowing teams to automate and manage infrastructure using code for consistent and scalable environments. DevOps also emphasizes monitoring, feedback loops, and continuous improvement to ensure optimal performance and quick issue resolution.";
 
+    // const dataToSend = finalTranscript || transcript; // make sure you're sending the final one
+    // if (!dataToSend.trim()) {
+    //   console.log("Transcript is empty, not sending.");
+    //   return;
+    // }
     // console.log('Data for summary is : ', data);
     console.log("Axios called");
 
@@ -121,8 +126,9 @@ const InitSession = () => {
         Authorization: `${tdata.tokem}`,
       },
     };
+    const dt = transcript;
 
-    console.log(transcript);
+    console.log(finalTranscript, interimTranscript, transcript)
     // return;
 
     axios
@@ -146,6 +152,8 @@ const InitSession = () => {
           )
           .then((response) => {
             console.log("Response for adding topics in room", response.data);
+            resetTranscript();
+
           })
           .catch((error) => {
             console.log("while creating question error occured");
@@ -156,7 +164,6 @@ const InitSession = () => {
         console.log(err);
       });
 
-    resetTranscript();
   };
 
   const startRecording = () => {
