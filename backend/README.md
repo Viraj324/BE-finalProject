@@ -60,7 +60,7 @@ Before you begin, make sure you have the following software installed on your sy
 
 ---
 
-This is the frontend repository: https://github.com/OmNikam04/studyai
+
 
 
  
