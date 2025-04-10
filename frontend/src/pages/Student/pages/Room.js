@@ -30,6 +30,7 @@ const Room = () => {
     headOrientation: 0,
     lastUpdate: null,
   });
+  const [attentionHistory, setAttentionHistory] = useState([])
 
   const [isSessionLive, setIsSessionLive] = useState(false);
 
@@ -100,6 +101,14 @@ const Room = () => {
         email: student.student.emailID,
       },
     });
+
+    // check if the session is still active
+    socketRef.current.on("classroom_finished", (id) => {
+
+      alert("Session has ended. Click on the quiz button to view the quiz.");
+      setIsSessionLive(false);
+    });
+
   };
 
   const enableCameraMode = async () => {
@@ -111,22 +120,9 @@ const Room = () => {
       student = JSON.parse(student);
 
       // Start periodic tracking every 5 seconds
-      setInterval(() => {
-        analyzeAttention();
+      setInterval(async () => {
+     await  analyzeAttention();
 
-        const pt = getAttentionPercentage();
-
-        // Join room
-        socketRef.current.emit("update_attention", {
-          _id: sessionid.roomId,
-          student: {
-            id: student.student._id,
-            name: student.student.firstName,
-            email: student.student.emailID,
-            attention: pt,
-          },
-          attention: pt,
-        });
       }, CONFIG.updateInterval);
     } catch (error) {
       console.error("Setup error:", error);
@@ -294,15 +290,6 @@ const Room = () => {
         lastUpdate: new Date().toLocaleTimeString(),
       });
 
-      // Determine attention state based on metrics
-      const { earThreshold, headAngleMin, headAngleMax } = CONFIG.thresholds;
-
-      // Eyes closed check
-      const eyesClosed = avgEAR < earThreshold;
-
-      // Head orientation check (looking away)
-      const headMisaligned =
-        headAngle < headAngleMin || headAngle > headAngleMax;
 
       // Determine final state
       let newState;
@@ -314,9 +301,10 @@ const Room = () => {
       } else {
         newState = "sleepy";
       }
-
+console.log("New state " , newState)
+getAttentionPercentage(newState)
       setAttentionState(newState);
-      recordAttention(newState);
+      return newState
     } catch (error) {
       console.error("Analysis error:", error);
     }
@@ -336,26 +324,42 @@ const Room = () => {
     }
   };
 
-  const attentionHistory = [];
 
-  // Call this whenever you detect a new state
-  function recordAttention(state) {
+  function getAttentionPercentage(newState) {
+    let student = sessionStorage.getItem("student");
+    student = JSON.parse(student);
     const stateMap = {
       sleepy: 0.1,
       unfocused: 0.2,
       focused: 0.9,
     };
+    const newAttentionHistory = attentionHistory;
+    newAttentionHistory.push(stateMap[newState])
+    console.log(newState, newAttentionHistory)
+    if (newAttentionHistory.length === 0) return 0;
 
-    attentionHistory.push(stateMap[state]);
-  }
+    const sum = newAttentionHistory.reduce((acc, val) => acc + val, 0);
+    const average = sum / newAttentionHistory.length;
+    console.log(sum, newAttentionHistory.length)
+    setAttentionHistory(newAttentionHistory)
 
-  function getAttentionPercentage() {
-    if (attentionHistory.length === 0) return 0;
+    let pt = Math.round(average * 100);
 
-    const sum = attentionHistory.reduce((acc, val) => acc + val, 0);
-    const average = sum / attentionHistory.length;
+    socketRef.current.emit("update_attention", {
+      _id: sessionid.roomId,
+      student: {
+        id: student.student._id,
+        name: student.student.firstName,
+        email: student.student.emailID,
+        attention: pt,
+      },
+      attention: pt,
+    });
 
-    return Math.round(average * 100); // return as a whole percentage
+
+
+
+    return pt; // return as a whole percentage
   }
 
   return (

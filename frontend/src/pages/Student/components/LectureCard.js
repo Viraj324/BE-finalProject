@@ -11,8 +11,6 @@ import { useNavigate } from "react-router-dom";
 import Card from "."; 
 
 const LectureCard = ({lecture,image}) => {
-
-
   
   const handleSessionClick = (sessionId) => {
     navigate(`/student/room/${sessionId}`);

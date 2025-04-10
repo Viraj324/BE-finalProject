@@ -98,7 +98,7 @@ const InitSession = () => {
       intervalId = setInterval(() => {
         console.log("Sending data to server");
         sendTranscriptionToServer();
-      }, 1000 * 2); // repeat every 1 minutes
+      }, 1000 * 4); // repeat every 1 minutes
     }
     return () => clearInterval(intervalId);
   }, [recording]);
@@ -157,7 +157,6 @@ const InitSession = () => {
       });
 
     resetTranscript();
-    stopRecording();
   };
 
   const startRecording = () => {
@@ -176,6 +175,32 @@ const InitSession = () => {
     // timer.stop();
 
     setQButton(true);
+
+    const config = {
+      headers: {
+        Authorization: `${tdata.tokem}`,
+      },
+    };
+
+    axios
+      .post(
+        `${process.env.REACT_APP_STUDYAI_API}/room/${id}/close-room`,
+        {},
+        config
+      )
+      .then((response) => {
+        console.log("Data from close button response is : ", response.data);
+        displayclosebtn(true);
+        
+
+      // emit that the session is closed
+      socketRef.current.emit("close_room", { _id: id });
+      socketRef.current.disconnect();
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+
   };
 
   const submitTranscript = (event) => {

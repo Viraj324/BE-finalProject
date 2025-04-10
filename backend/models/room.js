@@ -56,6 +56,11 @@ const roomSchema = mongoose.Schema({
     type: Number,
     default: 0,
   },
+  // to check the validity of the room
+  isActive: {
+    type: Boolean,
+    default: true,
+  },
   createdAt: {
     type: Date,
     default: Date.now,

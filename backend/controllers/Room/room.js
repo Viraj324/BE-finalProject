@@ -86,8 +86,30 @@ const addAttentionOfStudent = catchAsyncErrors(async (req, res) => {
     .send({ success: true, message: "added students attention to the room" });
 });
 
+const closeRoom = catchAsyncErrors(async (req, res) => {
+
+  const { id: roomID } = req.params;
+
+  try {
+    
+    const roomResponse = await Room.findOneAndUpdate(
+      { _id: roomID },
+      { isActive: false },
+      { new: true, runValidators: true }
+    )
+
+    return res.status(200).json({ message: "Room closed successfully", roomResponse });
+    
+  } catch (error) {
+    return res.status(500).json({ message: "Server error" });
+  }
+  
+});
+
+
 module.exports = {
   joinRoom,
   getSpecificRoom,
   addAttentionOfStudent,
+  closeRoom
 };

@@ -101,9 +101,12 @@ const start = async () => {
       });
 
       socket.on("close_room", (data) => {
+        socket.in(data._id).emit("classroom_finished");
         io.in(data._id).socketsLeave(data._id);
         console.log("all students left the session");
       });
+
+
 
       socket.on("share_quiz", (payload) => {
         socket.in(payload._id).emit("quiz_created", {
