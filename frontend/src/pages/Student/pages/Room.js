@@ -56,8 +56,9 @@ const Room = () => {
         setTeacher(data.data[0].creator);
 
         setQuizID(data.data[0].quiz);
+        
 
-        if (true) {
+        if (data.data[0].isActive === true) {
           setIsSessionLive(true);
           connectToWS();
           enableCameraMode();
